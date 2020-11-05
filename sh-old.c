@@ -133,7 +133,7 @@ runcmd(struct cmd *cmd)
 int
 getcmd(char *buf, int nbuf)
 {
-  printf(2, "$ ");
+  printf(2, "190031125$ ");
   memset(buf, 0, nbuf);
   gets(buf, nbuf);
   if(buf[0] == 0) // EOF
@@ -141,19 +141,10 @@ getcmd(char *buf, int nbuf)
   return 0;
 }
 
-char* strcat(char* s1,char *s2)
-{
-    char *b=s1;
-    while(*s1) ++s1;
-    while(*s2) *s1++ = *s2++;
-    *s1=0;
-    return b;
-}
-
 int
 main(void)
 {
-  static char buf[100],bufx[100];
+  static char buf[100];
   int fd;
 
   // Ensure that three file descriptors are open.
@@ -163,55 +154,18 @@ main(void)
       break;
     }
   }
-  int err=open("temp.pwd",O_CREATE|O_RDWR);
-  write(err,"/",1);
-  close(err);
+
   // Read and run input commands.
   while(getcmd(buf, sizeof(buf)) >= 0){
-    memset(bufx,'\0',sizeof(bufx));
-    if(strlen(buf)>1) bufx[0]='/';
-    strcat(bufx,buf);
-    //printf(1,"%s\n",bufx);
-    if(bufx[1] == 'c' && bufx[2] == 'd' && bufx[3] == ' '){
+    if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
       // Chdir must be called by the parent, not the child.
-      bufx[strlen(bufx)-1] = 0;  // chop \n
-      if(bufx[strlen(bufx)-1]=='/') bufx[strlen(bufx)-1]='\0';
-      if(chdir(bufx+4) < 0)
-      {
-        printf(2, "cannot cd %s\n", bufx+4); 
-      }
-      else
-      { 
-        err=open("/temp.pwd",O_RDWR);
-        char temp[100];
-        int e=read(err,temp,sizeof(temp));
-        if(e<0) exit();
-        if(strcmp(bufx+4,".")==0) continue;
-        if(strcmp(bufx+4,"..")==0)
-        {
-            temp[strlen(temp)-1]='\0';
-            int nn=strlen(temp)-1;
-            while(temp[nn]!='/'){
-                temp[nn]='\0';
-                //printf(1,"%s ",temp);
-                nn--;
-            }
-            unlink("/temp.pwd");
-            int err2=open("/temp.pwd",O_CREATE|O_RDWR);
-            write(err2,temp,1);
-            close(err2);     
-            //printf(1,"%s\n",temp);
-            continue;       
-        }
-        strcat(bufx,"/");
-        write(err,bufx+4,strlen(bufx)-4);
-        close(err);
-        //printf(1,"~~ %s\n",bufx+4);
-      }
+      buf[strlen(buf)-1] = 0;  // chop \n
+      if(chdir(buf+3) < 0)
+        printf(2, "cannot cd %s\n", buf+3);
       continue;
     }
     if(fork1() == 0)
-      runcmd(parsecmd(bufx));
+      runcmd(parsecmd(buf));
     wait();
   }
   exit();

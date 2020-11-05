@@ -1,0 +1,25 @@
+#include<stdio.h> 
+#include<setjmp.h> 
+jmp_buf buf; 
+void func() 
+{ 
+    printf("Welcome to GeeksforGeeks\n"); 
+  
+    // Jump to the point setup by setjmp 
+    longjmp(buf, 1); 
+  
+    printf("klu2\n"); 
+} 
+  
+int main() 
+{ 
+    // Setup jump position using buf and return 0 
+    if (setjmp(buf)) 
+        printf("klu3\n"); 
+    else
+    { 
+        printf("klu4\n"); 
+        func(); 
+    } 
+    return 0; 
+} 
